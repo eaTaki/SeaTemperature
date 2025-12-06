@@ -1,0 +1,210 @@
+---
+title: "Laboratory with R"
+author: "Enrique Akira Tagikuchi e Itziar Salazar"
+date: "2025-11-29"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 1
+
+### Download data (1a, 1b)
+
+```{r, warning=FALSE}
+source('CreateDF.R')
+if (!file.exists('sea_data.RData')){
+  download_data('sea_data.RData')
+}
+load('sea_data.RData')
+
+```
+
+### Check dimensionality (1c)
+
+```{r, warning=FALSE}
+cat("Dimension df_yearly\n")
+dim_sea.deep <- dim(sea.deep)
+cat("Rows (obs.):", dim_sea.deep[1], "\n")
+cat("Columns (var.):", dim_sea.deep[2], "\n")
+print(str(sea.deep)) #Structure of the df, dimensions, variables and data types
+print(summary(sea.deep)) #Descriptive statistical summary: mean, quantiles, min, max, NAs...
+print(sum(is.na(sea.deep))) #Just to make sure 
+```
+
+### Boxplot representation (1d)
+
+```{r pressure, echo=FALSE, warning=FALSE}
+ggplot(sea.deep, aes(x = factor(fondària), y = temperatura)) +
+  geom_boxplot() +
+  facet_wrap(~any) +
+  labs(
+    title = "Boxplot de la temperatura per fondària (2000-2017)",
+    x = "Fondària (m)", 
+    y = "Temperatura (°C)"
+  )
+```
+
+### Statistical analysis (1e)
+
+```{r, warning=FALSE}
+stats1 <- sea.deep %>%
+  group_by(fondària, any) %>%
+  summarise(
+    Mitjana = mean(temperatura),
+    Mediana = median(temperatura),
+    SD = sd(temperatura),
+    IQR = IQR(temperatura),
+    Min = min(temperatura), #Other statistics of interest
+    Max = max(temperatura),
+    Range = Max - Min, #Difference between max and min values
+    CV = SD / Mitjana, #Coefficient of Variation (CV)
+    .groups = 'drop'
+   ) 
+
+print(stats1) 
+View(stats1) #Average temperature per depth per year
+
+stats2 <- temp_dy %>%
+  group_by(fondària) %>%
+  summarise(
+    Mitjana = mean(temp_mitja),
+    Mediana = median(temp_mitja),
+    SD = sd(temp_mitja),
+    IQR = IQR(temp_mitja),
+    Min = min(temp_mitja), #Other statistics of interest
+    Max = max(temp_mitja),
+    Range = Max - Min, #Difference between max and min values
+    CV = SD / Mitjana, #Coefficient of Variation (CV)
+    .groups = 'drop'
+  )
+
+print(stats2) 
+View(stats2) #Average temperature per depth across 2000-2017   
+
+```
+
+### Annual variations (1f)
+
+```{r pressure, echo=FALSE, warning=FALSE}
+stats1 <- stats1 %>%
+  mutate(fondària = factor(fondària, levels = c(0, -20, -50, -80)))
+
+ggplot(stats1, aes(
+  x = any, 
+  y = Mitjana, 
+  color = fondària)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Variació anual de la temperatura mitjana per fondària",
+    subtitle = " (2000-2017) Mar Mediterrani, punt d'observació: 42º 03' N, 3º 15' E", #####Acabar de decidir títols i subtítols
+    x = "Any",
+    y = "Temperatura mitjana (°C)",
+    color = "Fondària (m)"
+  ) +
+  theme_minimal()
+
+```
+
+### Save to Excel (1g)
+
+```{r, warning=FALSE}
+library(openxlsx)
+
+new_var <- createWorkbook()
+#Average temperature per depth per year
+addWorksheet(new_var, "Stats_per_any")
+writeData(new_var, "Stats_per_any", stats1)
+#Average temperature per depth across 2000-2017   
+addWorksheet(new_var, "Stats_globals")
+writeData(new_var, "Stats_globals", stats2)
+#Save on a new excel file
+saveWorkbook(new_var, "NUEVO.xlsx", overwrite = TRUE)
+```
+
+##Exercise 2
+
+```{r pressure, echo=FALSE, warning=FALSE}
+#Executo els paquets a utilitzar 
+library(tidyr)
+library(gplots)
+library(RColorBrewer)
+
+#Elimino observacions "mitjana anual", conservo només els mesos Gener-Desembre
+if ("mes" %in% names(sea.deep)) {
+  obs <- sea.deep[sea.deep$mes != "Mitjana anual", ]
+} else {
+  obs <- sea.deep
+}
+
+temp_dy <- obs %>% #Calculo la temperatura mitjana per any per fondària 
+  group_by(any, fondària) %>%
+  summarise(
+    mean = mean(temperatura),
+    sd   = sd(temperatura),
+    n    = n()
+  ) %>%
+  ungroup() %>%
+  arrange(any, fondària)
+
+#Preparo les dades (el·laboració de matius) per a la representació heatmap.2 
+fondària <- c(-80, -50, -20, 0)
+
+matriu_1 <- temp_dy %>%
+  select(any, fondària, mean) %>%
+  pivot_wider(names_from = fondària, values_from = mean) %>%
+  arrange(any)
+anys <- matriu_1$any
+columnes <- intersect(as.character(fondària), colnames(matriu_1))
+rownames(matriu_1) <- anys
+mitjana_temp_mat <- as.matrix(matriu_1[, columnes])
+
+matriu_2 <- temp_dy %>%
+  select(any, fondària, sd) %>%
+  pivot_wider(names_from = fondària, values_from = sd) %>%
+  arrange(any)
+rownames(matriu_2) <- matriu_2$any
+sd_temp_mat <- as.matrix(matriu_2[, columnes])
+
+tons_heatmap <- colorRampPalette(brewer.pal(9, "YlOrRd"))(100) #Selecciono tonalitat mapa
+
+heatmap.2( #Fem el mapa
+  mean_mat,
+  Rowv = FALSE, Colv = FALSE, dendrogram = "none",
+  trace = "none", key = TRUE, density.info = "none",
+  col = tons_heatmap, na.color = "grey90",
+  margins = c(7, 9),
+  main = "",
+  xlab = "Fondària (m)", ylab = "Any",
+  labCol = columnes,
+  labRow = as.character(anys),
+  cexRow = 0.9, cexCol = 1.0,
+  add.expr = {
+    nr <- nrow(sd_temp_mat); nc <- ncol(sd_temp_mat)
+    for (j in seq_len(nc)) {
+      s <- sd_temp_mat[, j]
+      if (all(is.na(s))) next
+      rng <- range(s)
+      y <- sapply(seq_len(nr), function(i) nr - i + 1)
+      if (!is.finite(diff(rng)) || diff(rng) == 0) {
+        x <- rep(j, nr)
+      } else {
+        x_scaled <- (s - rng[1]) / diff(rng)
+        x <- (j - 0.5) + x_scaled
+      }
+      lines(x, y, col = "cyan3", lwd = 2)
+      points(x, y, col = "cyan3", pch = 20, cex = 0.75)
+    }
+  }
+)
+#Incorporo el títol més tard i l'adjusto per evitar encabalcaments
+title("Temperatura mitjana per any i fondària",
+      adj = 1,           
+      line = 1.2,        
+      cex.main = 1.1)   
+```
+
+######The heatmap shows how the annual mean water temperature changes at different depths (-80, -50, -20 and 0 meters) between 2000 and 2017. The colour distribution shows that surface waters (0 and -20 meters) are consistently the warmest and exhibit the greatest interannual variability. This variability is evident in the blue lines representing the standard deviation (SD), which are imposed on the heatmap. The deeper layers (-50 and -80 meters) display a colder and more stable thermal profile, with significantly reduced standard deviation, indicating lower influence from seasonal cycles. The period between 2014 and 2016 stands out as particularly intense warming conditions are observed at the surface, potentially driven by large-scale oceanographic or climatic dynamics.
