@@ -1,7 +1,7 @@
 ---
 title: "Laboratory with R"
-author: "Enrique Akira Tagikuchi e Itziar Salazar"
-date: "2025-11-29"
+author: "Enrique Akira Takiguchi and Itziar Salazar"
+date: "2025-12-31"
 output: pdf_document
 ---
 
@@ -31,7 +31,7 @@ cat("Rows (obs.):", dim_sea.deep[1], "\n")
 cat("Columns (var.):", dim_sea.deep[2], "\n")
 print(str(sea.deep)) #Structure of the df, dimensions, variables and data types
 print(summary(sea.deep)) #Descriptive statistical summary: mean, quantiles, min, max, NAs...
-print(sum(is.na(sea.deep))) #Just to make sure 
+print(sum(is.na(sea.deep))) #Just to make sure there are no NAs
 ```
 
 ### Boxplot representation (1d)
@@ -101,9 +101,9 @@ View(stats2) #Average temperature per depth across 2000-2017
 
 ```{r AnnnualVariations, echo=FALSE}
 stats1 <- stats1 %>%
-  mutate(fondària = factor(fondària, levels = c(0, -20, -50, -80)))
+  mutate(fondària = factor(fondària, levels = c(0, -20, -50, -80))) #Ensure depth levels are trated as categorical factors
 
-ggplot(stats1, aes(
+ggplot(stats1, aes( #Create the time-series plot
   x = any, 
   y = Mitjana, 
   color = fondària)) +
@@ -117,6 +117,7 @@ ggplot(stats1, aes(
     color = "Fondària (m)"
   ) +
   theme_minimal()
+  theme(legend.position = "bottom") # Optional: Move legend to bottom for better horizontal space
 
 ```
 
@@ -136,24 +137,24 @@ writeData(new_var, "Stats_globals", stats2)
 saveWorkbook(new_var, "NUEVO.xlsx", overwrite = TRUE)
 ```
 
-## Exercise 2 
+## Exercise 2
 
 ### Plot1 - Heatmap
 
 ```{r Heatmap, echo=FALSE}
-#Executo els paquets a utilitzar 
+#Run libraries 
 library(tidyr)
 library(gplots)
 library(RColorBrewer)
 
-#Elimino observacions "mitjana anual", conservo només els mesos Gener-Desembre
+#Remove annual average temperature observations, keep only the months from January to December
 if ("mes" %in% names(sea.deep)) {
   obs <- sea.deep[sea.deep$mes != "Mitjana anual", ]
 } else {
   obs <- sea.deep
 }
 
-temp_dy <- obs %>% #Calculo la temperatura mitjana per any per fondària 
+temp_dy <- obs %>% #Calculate the average temperature per year by depth
   group_by(any, fondària) %>%
   summarise(
     mean = mean(temperatura),
@@ -163,7 +164,7 @@ temp_dy <- obs %>% #Calculo la temperatura mitjana per any per fondària
   ungroup() %>%
   arrange(any, fondària)
 
-#Preparo les dades (el·laboració de matius) per a la representació heatmap.2 
+#Prepare the data for heatmap.2 representation by creating two matrices 
 fondària <- c(-80, -50, -20, 0)
 
 matriu_1 <- temp_dy %>%
@@ -182,9 +183,9 @@ matriu_2 <- temp_dy %>%
 rownames(matriu_2) <- matriu_2$any
 sd_temp_mat <- as.matrix(matriu_2[, columnes])
 
-tons_heatmap <- colorRampPalette(brewer.pal(9, "YlOrRd"))(100) #Selecciono tonalitat mapa
+tons_heatmap <- colorRampPalette(brewer.pal(9, "YlOrRd"))(100) #Select map color palette
 
-heatmap.2( #Fem el mapa
+heatmap.2( #Map design and specifications
   mitjana_temp_mat,
   Rowv = FALSE, Colv = FALSE, dendrogram = "none",
   trace = "none", key = TRUE, density.info = "none",
@@ -213,47 +214,46 @@ heatmap.2( #Fem el mapa
     }
   }
 )
-#Incorporo el títol més tard i l'adjusto per evitar encabalcaments
+#Late addition of the title and adjustments to avoid overlap
 title("Temperatura mitjana per any i fondària",
       adj = 1,           
       line = 1.2,        
       cex.main = 1.1)   
 ```
 
-######The heatmap sh
+The heatmap shows how the annual mean water temperature changes at different depths (-80, -50, -20 and 0 meters) between 2000 and 2017. The colour distribution shows that surface waters (0 and -20 meters) are consistently the warmest and exhibit the greatest interannual variability. This variability is evident in the blue lines representing the standard deviation (SD), which are imposed on the heatmap. The deeper layers (-50 and -80 meters) display a colder and more stable thermal profile, with significantly reduced standard deviation, indicating lower influence from seasonal cycles. The period between 2014 and 2016 stands out as particularly intense warming conditions are observed at the surface, potentially driven by large-scale oceanographic or climatic dynamics.
 
-ows how the annual mean water temperature changes at different depths (-80, -50, -20 and 0 meters) between 2000 and 2017. The colour distribution shows that surface waters (0 and -20 meters) are consistently the warmest and exhibit the greatest interannual variability. This variability is evident in the blue lines representing the standard deviation (SD), which are imposed on the heatmap. The deeper layers (-50 and -80 meters) display a colder and more stable thermal profile, with significantly reduced standard deviation, indicating lower influence from seasonal cycles. The period between 2014 and 2016 stands out as particularly intense warming conditions are observed at the surface, potentially driven by large-scale oceanographic or climatic dynamics.
-
-### Plot2 - 
+### Plot2 -
 
 ```{r Radial}
-library(plotrix)
+#Run library 
+library(plotrix) 
 
 mes_l <- c("Gener", "Febrer", "Març", "Abril", "Maig", "Juny", 
            "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre")
 
-radial_data <- sea.deep %>%
+radial_data <- sea.deep %>% #Filter out annual averages and calculate mean temperature per month and depth
   filter(mes != 'Mitjana anual') %>%
   mutate(mes = factor(mes, levels = mes_l)) %>%
   group_by(mes, fondària) %>%
   summarise(avg_temp = mean(temperatura, na.rm = TRUE), .groups = 'drop')
 
-plot_matrix <- radial_data %>%
+plot_matrix <- radial_data %>% #Data as matrix for the radial plot
   pivot_wider(names_from = fondària, values_from = avg_temp) %>%
   arrange(mes) %>%
   select(-mes) %>%
   as.matrix()
 
-plot_matrix = rbind(plot_matrix, plot_matrix[1, 1:4])
+plot_matrix = rbind(plot_matrix, plot_matrix[1, 1:4]) #Append the first row to the end so the lines connect back to January
 
-depth_levels <- colnames(plot_matrix)
+depth_levels <- colnames(plot_matrix) #Setup parameters
 num_depths <- length(depth_levels)
 
 col_set = c("blue","cyan", "green", "coral")
 
-angles <- c((0:(length(mes_l) - 1)) * (2 * pi / length(mes_l)),0)
+angles <- c((0:(length(mes_l) - 1)) * (2 * pi / length(mes_l)),0) #Calculate angles in radians for each month
 
-radial.plot(
+radial.plot( #Plot design and specifications
   t(plot_matrix), radial.pos = t(replicate(4, angles)), rp.type = "l",
   lty = 4, lwd = 2,
   labels = mes_l, label.pos = angles, line.col = col_set,
@@ -269,7 +269,11 @@ legend(
 )
 ```
 
+The radial plot shows how average temperatures recorded at different depths (-80, -50, -20 and 0 metres) changed across each month of the year from 2000 to 2017. The near-perfect overlap of the lines between December and March stands out, showing that temperature values remain almost identical regardless of depth. In contrast, a shift begins in April, becoming most pronounced during the summer months. While surface temperatures at 0 m and -20 m show a sharp expansion towards higher values, deeper measurements at -50 m and -80 m remain closer to the center of the plot. As the year progresses into November and December, these temperature values contract and converge again. Furthermore, the plot shows that the surface is subject to significant monthly temperature fluctuations, whereas the deeper layers have a much more consistent and narrow temperature range throughout the year.
+
 ## Exercise 3
+
+### a) Temperature differences between months
 
 ```{r MontlyChange}
 library(stringr )
@@ -279,10 +283,90 @@ print(plots$a)
 
 ```
 
+### b) Temperature differences between years
+
 ```{r Historical}
 print(plots$b1)
 ```
 
 ```{r YearlyHistorical}
 print(plots$b2)
+```
+
+### c) Simulated dataframe
+
+We now generate some simulated temperatures. We are going to use a noisy sine function with a period of 12 months
+
+```{r}
+anys = 18
+min_sim = 13
+ampl_sim = c(1,2,3,4)
+sim.deep = data.frame(
+  mes = rep(mes_l, anys, each=4),
+  fondària = rep(fondària, anys*12),
+  any = rep(seq(2000, 2000+anys-1), each=4*12),
+  temperatura = rep(0, 4*12*anys)
+)
+for (i in 1:4){
+  sim_t = sin(2*pi*seq(0, anys, 1/12))*ampl_sim[i]
+  sim_t = sim_t + rnorm(length(sim_t), min_sim+ampl_sim[i], 1)
+  sim.deep$temperatura[sim.deep$fondària==fondària[i]] = sim_t[1:length(sim_t)-1]
+}
+
+sim.pred <- sim.deep %>%
+  group_by(mes, fondària) %>%
+  arrange(any, .by_group = TRUE) %>%
+  mutate(temperatura_accum = cummean(temperatura)) %>%
+  ungroup()
+```
+
+Checking it
+
+```{r}
+plots = ex3(sim.deep, sim.pred)
+print(plots$b2)
+```
+
+### e) Additional data (salinity) crossing
+
+```{r}
+library(ncdf4)
+
+# Loading the file
+nc_file = nc_open("cmems_mod_med_phy-sal_my_4.2km_P1M-m_1766852522604.nc")
+
+# Extracting the data and transforming to a dataframe
+salinity_mat = ncvar_get(nc_file, nc_file$var[[1]])
+salinity = data.frame(
+  Time = rep(nc_file$dim$time$vals, times = nrow(salinity_mat)),
+  fondària = rep(round(nc_file$dim$depth$vals), times = ncol(salinity_mat)),
+  salinitat = as.vector(salinity_mat)
+)
+
+# Changing dates to year/month
+date_objs = as.POSIXct(salinity$Time, origin = "1970-01-01", tz = "UTC")
+salinity$any = as.numeric(format(date_objs, "%Y"))
+month_index = as.numeric(format(date_objs, "%m"))
+salinity$mes = mes_l[month_index]
+salinity$Time = NULL
+
+# Adjusting depths to fit existing data
+salinity <- salinity[salinity$fondària %in% c(1, 19, 51, 79), ]
+salinity$fondària[salinity$fondària == 1] = 0
+salinity$fondària[salinity$fondària == 19] = -20
+salinity$fondària[salinity$fondària == 51] = -50
+salinity$fondària[salinity$fondària == 79] = -80
+
+# Creating combinet dataframe to estimate linear relation
+df_combined <- sea.deep %>%
+  inner_join(salinity, by = c("any", "mes", "fondària"), suffix = c("_df1", "_df2"))
+
+correlation_value <- cor(df_combined$temperatura, 
+                         df_combined$salinitat, 
+                         use = "complete.obs")
+
+print(correlation_value)
+
+aa = lm(temperatura ~ salinitat, df_combined)
+summary(aa)
 ```
