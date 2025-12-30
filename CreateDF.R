@@ -7,7 +7,7 @@ download_data = function(filename){
   
   years = seq(2000, 2017)
   csv_cols = c('row', 'col', 'ref', 'value')
-  col_names = c('mes', 'fondària', 'any', 'temperatura')
+  col_names = c('mes', 'fondaria', 'any', 'temperatura')
   
   
   
@@ -29,9 +29,9 @@ download_data = function(filename){
   }
   
   # Fixing format and making numerical
-  sea.deep$fondària <- parse_number(sea.deep$fondària)
+  sea.deep$fondaria <- parse_number(sea.deep$fondaria)
   sea.deep$temperatura <- as.numeric(gsub(",", ".", sea.deep$temperatura, fixed = TRUE))
-  sea.pred$fondària <- parse_number(sea.pred$fondària)
+  sea.pred$fondaria <- parse_number(sea.pred$fondaria)
   sea.pred$temperatura <- as.numeric(gsub(",", ".", sea.pred$temperatura, fixed = TRUE))
 
 save(sea.deep, sea.pred, file=filename)
