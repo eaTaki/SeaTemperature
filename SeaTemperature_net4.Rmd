@@ -11,11 +11,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [**Problem statement:**]{.smallcaps} Europe is affected by climate change and its effects are not only perceived on earth. European water bodies (lakes, rivers and oceans and seas of the continent) are also affected. Given that there is more water than land on the planet’s surface, it is not surprising that the warming of the oceans has accounted for about 93 % of the global warming since the 1950s. This warming occurs as a result of the increase in greenhouse gas emissions, especially carbon dioxide, which in turn trap more and more solar energy within the atmosphere. Most of this trapped heat is eventually stored in the oceans, which affects the temperature and the circulation of water. Sea surface temperatures on European coasts are rising more rapidly than those in the world oceans. Water temperature represents one of the most important regulatory elements of marine life. Temperature increases are already causing major changes under the surface of the water
 
-## Exercise 1
+------------------------------------------------------------------------
 
-### 1.a,b) Data importation, variable specification, and metadata definition
+# Exercise 1
 
-The dataset `sea_data` is directly sourced from [IDESCAT](https://www.idescat.cat/indicadors/?id=aec&n=15196), with the variable names set as per the original dataset. Technical metadata, including measurement units and descriptions of variables such as years, months, and depth, has been added using the [label]{.smallcaps} function of the [`Hmisc`]{.smallcaps} package to tag variables. The data set shows the temperature of the sea in degrees Celsius at depths of 0, 20, 50, and 80 metres between 2000 and 2017. These measurements were taken at L'Estartit observation point on the Costa Brava, which is one mile east of the Medes Islands (Girona). The coordinates of this location are $42^{\circ} 03'$ N and $3^{\circ} 15'$ E.
+## 1.a,b) Data importation, variable specification, and metadata definition
+
+The data set `sea_data` is **directly sourced** from [IDESCAT](https://www.idescat.cat/indicadors/?id=aec&n=15196), with the variable names set as per the original dataset. Technical **metadata**, including measurement units and descriptions of variables such as years, months, and depth, has been **added** using the [`label`]{.smallcaps} function of the [`hmisc`]{.smallcaps} package to tag variables.
+
+The data set shows the temperature of the sea in degrees Celsius at depths of 0, -20, -50, and -80 meters between 2000 and 2017. These measurements were taken at L'Estartit observation point on the Costa Brava, which is one mile east of the Medes Islands (Girona). The coordinates of this location are $42^{\circ} 03'$ N and $3^{\circ} 15'$ E.
 
 ```{r Download, echo=FALSE, warning=FALSE, message=FALSE}
 source('CreateDF.R')
@@ -45,9 +49,9 @@ sea.pred$mes = mes_l[match(sea.pred$mes, mes_cat)]
 
 ```
 
-### 1.c) Data structure
+## 1.c) Data structure
 
-The sea.deep data frame is checked to make sure it is complete and correct. The internal organization of the data is inspected to verify that data types and the previously assigned attributes are correctly integrated. What's more, we make a summary of the data so we can see at a glance what the main values are, and how far they range. We also check that there are no missing values in the dataset.
+The data frame `sea.deep` is checked to make sure it is complete and correct. The internal organization of the data is inspected to **verify** that **data types** and the previously assigned **attributes** in *1.a,b* are correctly integrated. We make a **summary** of the data so we can see at a glance what the main values are, and how far they range. We also check that there are no **NAs** in the dataset.
 
 ```{r, Dimensionality, echo=FALSE, warning=FALSE}
 cat("Dimension df_yearly\n")
@@ -59,9 +63,9 @@ print(summary(sea.deep)) #Descriptive statistical summary: mean, quantiles, min,
 print(sum(is.na(sea.deep))) #Just to make sure there are no NAs
 ```
 
-### 1.d) Visual distribution
+## 1.d) Visual distribution
 
-The way the seawater temperature changes over time can be seen in the boxplots, which are divided into categories based on depth and year. This picture helps us to spot changes in temperature, patterns over time, and anything unusual across different depths from 2000 to 2017.
+The way the **seawater temperature changes over time** can be seen in the box-plots, which are divided into categories based on depth and year. This picture helps us to spot changes in temperature, patterns over time, and anything unusual across depths from 2000 to 2017.
 
 ```{r Boxplots, echo=FALSE, warning=FALSE}
 ggplot(sea.deep, aes(x = factor(fondaria), y = temperatura)) + #Treated as a factor to represent depth levels on the x-axis
@@ -74,9 +78,11 @@ ggplot(sea.deep, aes(x = factor(fondaria), y = temperatura)) + #Treated as a fac
   )
 ```
 
-### 1.e) Quantitative summary
+## 1.e) Quantitative summary
 
-A quantitative characterization is done by calculating the mean, median, standard deviation, and interquartile range for each group. This analysis is supported by other indicators, such as the absolute range and the Coefficient of Variation (CV), which provide a strong assessment of both dispersion and relative variability. The statistical summary is done in two stages. First, it looks at how the temperature changes with depth and year. Then, it puts these average temperatures together across the whole study period (2000–2017). These estimators help us to compare the central tendency and the stability of the thermal profiles at the specific depths recorded.
+A **quantitative characterization** is done by calculating the mean, median, standard deviation, and interquartile range for each group. This analysis is **supported by other indicators**, such as the **absolute range** and the **coefficient of variation**, which provide a strong assessment of both dispersion and relative variability.
+
+The statistical summary is done in two stages. First, it looks at how the temperature changes with depth and year. Then, it puts these average temperatures together across the whole period (2000–2017). These estimators help us to compare the **central tendency** and the **stability of the vertical temperature distributions** at the specific depths recorded.
 
 ```{r, StatisticalAnalysis, echo=FALSE, warning=FALSE}
 
@@ -124,7 +130,9 @@ View(stats2) #Average temperature by depth across 2000-2017
 
 ```
 
-### 1.f) Trend analysis - Annual variations
+## 1.f) Annual thermal trends
+
+To represent the data to be able to see the annual variations of the average temperature in the total depths and years studied, a **multi-line plot** was generated using [`ggplot2`]{.smallcaps} . By mapping years on the x-axis and average temperatures on the y-axis, and using different colors representing different depths, the graph shows how temperatures have changed over time and how stable the temperature distributions are. It effectively shows **synchronized inter-annual fluctuations across depths**, as well as a **general warming trend** observed during 2000-2017 time period.
 
 ```{r AnnnualVariations, echo=FALSE, warning=FALSE}
 stats1 <- stats1 %>%
@@ -148,9 +156,9 @@ ggplot(stats1, aes( #Create the time-series plot
 
 ```
 
-### 1.g) Data export to Excel
+## 1.g) Data export to Excel
 
-The information that has been processed, which includes yearly statistics and long-term totals, is sent to an outside .xlsx file using the [openxlsx]{.smallcaps} package. This process makes sure that the data is stored and can be used for external reporting or further analysis. The workbook has two sheets, including *"Stats_per_any"* and *"Stats_globals"*.
+The **information** that has been processed is **sent to an outside .xlsx file** using the [`openxlsx`]{.smallcaps} package. This process makes sure that the data is stored and can be used for external reporting or further analysis. The Excel file has two sheets, including `stats_per_any` and `stats_global` .
 
 ```{r, Excel, echo=FALSE, warning=FALSE, include=FALSE}
 library(openxlsx)
@@ -166,9 +174,11 @@ writeData(new_var, "Stats_globals", stats2)
 saveWorkbook(new_var, "NUEVO.xlsx", overwrite = TRUE)
 ```
 
-## Exercise 2
+# Exercise 2
 
-### 2.a) Heatmap generated with "Gplots"
+## 2.a) Heat map with "Gplots"
+
+Following the instructions we generate a heat map using [`gplots`]{.smallcaps} package, showing annual mean water temperature changes across time and depths.
 
 ```{r Heatmap, echo=FALSE, warning=FALSE}
 #Run libraries 
@@ -243,19 +253,25 @@ heatmap.2( #Map design and specifications
   }
 )
 #Late addition of the title and adjustments to avoid overlap
+par(font.main = 1)
 title("Average temperature by year and depth",
       adj = 1,           
       line = 1.2,        
       cex.main = 1.1)   
 ```
 
-The heatmap shows how the annual mean water temperature changes at different depths (-80, -50, -20 and 0 meters) between 2000 and 2017. The colour distribution shows that surface waters (0 and -20 meters) are consistently the warmest and exhibit the greatest interannual variability. This variability is evident in the blue lines representing the standard deviation (SD), which are imposed on the heatmap. The deeper layers (-50 and -80 meters) display a colder and more stable thermal profile, with significantly reduced standard deviation, indicating lower influence from seasonal cycles. The period between 2014 and 2016 stands out as particularly intense warming conditions are observed at the surface, potentially driven by large-scale oceanographic or climatic dynamics.
+The heat map shows how the annual mean water temperature has changed at different depths (-80, -50, -20 and 0 meters) between 2000 and 2017. The color distribution shows that **surface waters** (0 and -20 meters) are consistently **the warmest** and show the **greatest inter-annual variability**. This variability is evident in the blue lines representing the standard deviation, which are imposed on the heat map. The **deeper layers** (-50 and -80 meters) display a **colder and more stable thermal profile**, much less variation, suggesting less impact from seasonal cycles.
 
-### 2.b) Radial plot generated with "plotrix"
+The **years between 2014 and 2016** were a time of particularly **intense warming**. This was seen at the surface, and it is thought that it may have been caused by changes in the ocean or the climate.
+
+## 2.b) Radial plot with "plotrix"
+
+We used the [`plotrix`]{.smallcaps} package to make a radial plot. This shows the average monthly temperature changes across time and depths.
 
 ```{r Radial, echo=FALSE, warning=FALSE}
-#Run library 
+#Run libraries
 
+par(font.main = 1) #Set the title font to plain text
 
 radial_data <- sea.deep %>% #Filter out annual averages and calculate mean temperature per month and depth
   filter(mes != 'Annual Average') %>%
@@ -294,17 +310,21 @@ legend(
 )
 ```
 
-The radial plot shows how average temperatures recorded at different depths (-80, -50, -20 and 0 metres) changed across each month of the year from 2000 to 2017. The near-perfect overlap of the lines between December and March stands out, showing that temperature values remain almost identical regardless of depth. In contrast, a shift begins in April, becoming most pronounced during the summer months. While surface temperatures at 0 m and -20 m show a sharp expansion towards higher values, deeper measurements at -50 m and -80 m remain closer to the center of the plot. As the year progresses into November and December, these temperature values contract and converge again. Furthermore, the plot shows that the surface is subject to significant monthly temperature fluctuations, whereas the deeper layers have a much more consistent and narrow temperature range throughout the year.
+The radial plot shows how average temperatures recorded at different depths (-80, -50, -20 and 0 meters) changed across each month of the year from 2000 to 2017. The lines are almost perfectly overlapped **between December and March**, showing that **temperature values remain almost identical regardless of depth**. However, there is a **change** that starts **in April**, and becomes more obvious during the summer months. While surface temperatures at 0 and -20 meters show a sharp increase towards higher values, the deeper measurements at -50 and -80 meters remain closer to the center of the graph. As the year progresses into **November and December**, these **temperature values contract and converge again.**
 
-## Exercise 3
+Furthermore, the plot shows that the **surface** has a **lot of** monthly temperature **variations**, while the **deeper layers** have a much **more consistent** and narrow temperature range throughout the year.
+
+# Exercise 3
 
 A function is scheduled to do the following:
 
--   Calculate the temperature difference between one month and the following month for each year and depth, offering a graph for each specified year and the average of all years studied.
+-   a\. Calculate the temperature **difference between one month and the following month** for each year and depth, offering a graph for each specified year and the average of all years studied.
 
--   Calculate the difference in temperature between each month and the same month of the previous 30 years, offering a graph for each year and the average for all years studied.
+-   b\. Calculate the **difference in temperature between each month and the same month of the previous 30 years**, offering a graph for each year and the average for all years studied.
 
-### 3.a) Temperature differences between months
+## 3.a) Monthly rate of temperature change
+
+This analysis represents **inter-monthly temperature variation**. This is very useful to observe seasonal warming and cooling rates at different depths.
 
 ```{r MontlyChange, echo=FALSE, warning=FALSE}
 
@@ -314,7 +334,9 @@ print(plots$a)
 
 ```
 
-### 3.b) Temperature differences between years
+## 3.b) Historical comparison
+
+This analysis looks at **decade temperature anomalies**. The resulting graphs show if a specific month was warmer or cooler than usual, providing insight into ongoing warming trends or unusual years.
 
 ```{r Historical, echo=FALSE, warning=FALSE}
 print(plots$b1)
@@ -324,7 +346,7 @@ print(plots$b1)
 print(plots$b2)
 ```
 
-### 3.c) Simulated dataframe
+## 3.c) Function validation and testing
 
 To make sure the function works properly and everything runs smoothly, we generate some simulated temperatures. For this, we use a noisy sine function with a period of 12 months.
 
@@ -358,19 +380,23 @@ plots = ex3(sim.deep, sim.pred)
 print(plots$b2)
 ```
 
-### 3.d) Comment on the results found
+## 3.d) Discussion of results 
 
-When we look at how temperatures change from month to month, we can see a clear difference between the surface and the deeper water during summer periods. For instance in August, the surface is about 23°C, but the water at 80 meters is much cooler and more stable. This means there is a risk of different layers of water getting too hot or too cold. This happens because warm water is lighter than cold water creating a "cap" on the surface that acts like a barrier that stops oxygen from moving down and nutrients from moving up. This can eventually lead to a "bottom-up" collapse of the food chain and create "dead zones" where there is too little oxygen for animals and plants to survive. What's more, if we compare the temperatures of the last few years to the average temperature between 1974 and 1999, we can see that the temperature has been getting steadily higher. The water was much warmer than usual in 2003, 2011, and 2017.
+When we look at how **temperatures change from month to month**, we can see a **clear difference between the surface and deeper waters during summer periods**. For instance in August, the surface is about 23°C, but the water at -80 meters is much cooler and more stable. This means there is a risk of different layers of water getting too hot or too cold. This happens because warm water is lighter than cold water creating a "cap" on the surface that acts like a barrier that stops oxygen from moving down and nutrients from moving up.
+
+This process is called **stratification** and can eventually lead to a **collapse of the food chain** and create **dead zones** where there is too little oxygen for animals and plants to survive. Furthermore, if we compare the temperatures of the last few years to the average temperature between 1974 and 1999, we can see that the **temperature has been getting steadily higher**. The **water** was **much warmer than usual in 2003, 2011, and 2017.**
 
 We used pretend data to show that our function and our calculations are correct. We created a mathematical "sine wave" to copy the natural 12-month cycle of the seasons. This showed that we can spot regular patterns even when there is random "noise" in the data. If we calculate the average of the total, we can make the results more stable and reliable. This helps us to see the bigger picture without getting distracted by small changes that happen every year.
 
-In summary, the results show that the sea is getting warmer, which is a big threat to marine biodiversity. The difference between the temperatures at the surface of the ocean and at depth is getting bigger, and we are seeing more "heat spikes" than before. These changes are not just part of a natural cycle but they are clear signs of climate change.
+In summary, the results show that **the sea is getting warmer**, which is a big threat to marine biodiversity. The difference between the temperatures at the surface of the ocean and at depth is getting bigger, and we are seeing more heat spikes than before. These changes are not just part of a natural cycle but they are clear signs of climate change.
 
-### 3.e) Additional data (salinity) crossing
+## 3.e) Additional data crossing and correlation analysis 
 
-We look for other data to better explain the climate change that is taking place. To be more specific, we are looking for information about the salt content of the water at a close location and at different depths (0, 20, 50 and 80 metres). We get our information from [this link](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_BGC_006_014/description).
+We look for other data to better explain the climate change that is taking place. To be more specific, we are looking for information about the salt content of the water at a close location to $42^{\circ} 03'$ N and $3^{\circ} 15'$ E and at depths 0, -20, -50 and -80 meters. We get our information from the [Copernicus Marine Service](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_BGC_006_014/description).
 
-The saltiness of water is as important as temperature when diagnosing climate change, but it tells us different things than temperature alone. Salinity is a way to measure climate change. It shows how the water cycle is changing. When it gets warmer, more water evaporates and the water becomes saltier. So, if the salt levels in the ocean suddenly drop a lot, it could be a sign of extreme weather or melting ice on other parts of the planet. Changes in the amount of salt in the water change how thick or thin the water is, and can make the layers of the water more stable. Salinity drives the global "conveyor belt" of ocean currents, so changes to it could disrupt how heat is distributed around the planet and put ecosystems under more stress.
+The **saltiness of water** is as important as temperature when diagnosing climate change, but it tells us different things than temperature alone. **Salinity** is a **key indicator** of **changes in the water cycle**, which is important for understanding how water moves around the world. When it gets warmer, more water evaporates and the water becomes saltier. If the salt levels in the ocean suddenly dropped a lot, it could be a sign of extreme weather or melting ice on other parts of the planet.
+
+**Changes in the amount of salt in the water change how thick or thin the water is**, and can make the layers of the water more stable. Alongside temperature, salinity drives the thermohaline circulation of ocean currents, so disruptions in these levels can increase stratification.
 
 ```{r, echo=FALSE, warning=FALSE}
 
@@ -415,20 +441,20 @@ aa = lm(temperatura ~ salinitat, df_combined)
 summary(aa)
 ```
 
-By combining these sets of data, we can better tell the difference between the usual seasonal changes and long-term shifts caused by climate change, which changes how water moves through the environment. The data shows that temperature and salinity usually go in opposite directions. Although the connection is only weak (correlation -0.12), the very low p-value of 0.00032 shows that this link is real and not just a coincidence.
+By combining these sets of data, we can **better tell the difference between the usual seasonal changes and long-term shifts caused by climate change**, which changes how water moves through the environment. The data shows that temperature and salinity usually go in opposite directions. Although the connection is only weak with a **correlation** of **-0.12**, the very low **p-value** of **0.00032** shows that this link is not just a coincidence.
 
-The Multiple R-squared of 0.0149 shows that salinity explains only about 1.5% of the variation in temperature. This result is expected in the study of the sea, as the temperature of seawater is primarily driven by the sun and changes with the seasons, rather than the salt content alone. But the data also shows that when the sea is very salty, it is often very hot. These changes can be too much for marine life, which can't handle the heat and the changes to the water.
+The **multiple R-squared** of **0.0149** shows that salinity explains only about 1.5% of the variation in temperature. This **result** is **expected as the temperature of seawater is primarily driven by the sun** and changes with the seasons, rather than the salt content alone. But the data also shows that **when the sea is very salty, it is often very hot**.
 
-In conclusion, while salinity is not the main cause of temperature changes, it is an important tool for understanding the biochemical changes triggered by global warming. Our model clearly shows a connection between these two variables. When we look at how climate change is affecting the sea, measuring salt levels and temperature helps us to see how the layers of the sea are becoming more separated. This tells us about dead zones, which are areas of the sea where there are no fish because the water is too polluted. This also gives us a better idea of all the problems that fish and other sea life are facing.
+In conclusion, while salinity is not the main cause of temperature changes, it is an important tool for understanding the biochemical changes triggered by global warming. Our model clearly shows a connection between these two variables. When we look at how climate change is affecting the sea, measuring salt levels and temperature helps us to see **how the layers of the sea are becoming more separated**. This can help us to see more accurately, the increasing stratification of the water column, **predicting the emergence of hypoxic zones** that threaten marine biodiversity.
 
-### 3.f) R library and Github
+## 3.f) Project reproductibility and additional documentation
 
-To make sure the analysis is transparent and can be recreated by anyone, a **public repository** named **"SeaTemperature"** has been set up on **GitHub** <https://github.com/eaTaki/SeaTemperature>. This repository is a central open-source storage space for the following components:
+To make sure the analysis is transparent and can be recreated by anyone, a **public repository** named [**"SeaTemperature"**](https://github.com/eaTaki/SeaTemperature) has been set up on **GitHub** \<[https://github.com/eaTaki/SeaTemperature](http://127.0.0.1:24511/#0 "https://github.com/eaTaki/SeaTemperature")\>. This repository is a central open-source storage space for the following components:
 
--   Assignment instructions
+-   The assignment instructions.
 
--   R library that stores the functions used for the completion of this project, thus being: CreateDF and Ex3.
+-   The presented Rmarkdown document.
 
--   Salinity data used to complete exercise 3.e.
+-   The data used to complete the assignment under`sea_data.RData` . As well as salinity data used to complete exercise *3.e*.
 
--   Etc especificar según contenidos finales
+-   An R library that stores the functions used for the completion of this project, thus being: `CreateDF.R` and `Ex3.R`.
