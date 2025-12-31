@@ -449,12 +449,4 @@ In conclusion, while salinity is not the main cause of temperature changes, it i
 
 ## 3.f) Project reproductibility and additional documentation
 
-To make sure the analysis is transparent and can be recreated by anyone, a **public repository** named [**"SeaTemperature"**](https://github.com/eaTaki/SeaTemperature) has been set up on **GitHub** \<[https://github.com/eaTaki/SeaTemperature](http://127.0.0.1:24511/#0 "https://github.com/eaTaki/SeaTemperature")\>. This repository is a central open-source storage space for the following components:
-
--   The assignment instructions.
-
--   The presented Rmarkdown document.
-
--   The data used to complete the assignment under`sea_data.RData` . As well as salinity data used to complete exercise *3.e*.
-
--   An R library that stores the functions used for the completion of this project, thus being: `CreateDF.R` and `Ex3.R`.
+To make sure the analysis is transparent and can be recreated by anyone, a **public repository** named [**"SeaTemperature"**](https://github.com/eaTaki/SeaTemperature) has been set up on **GitHub** \<[https://github.com/eaTaki/SeaTemperature](http://127.0.0.1:24511/#0 "https://github.com/eaTaki/SeaTemperature")\>. This repository is a central open-source storage space and the organization of its contents can be found in the README file under said repository.
